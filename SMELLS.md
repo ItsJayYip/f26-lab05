@@ -11,17 +11,15 @@ Three smells, each in a different part of the module. For each one, fill in all 
 
 ### Smell 1
 
-**The smell.** Name it, using the vocabulary from lecture.
+**The smell.** God Class
 
-**Classic or agent-specific.** Which, and why that label. For agent-specific, say which of
-the lecture's three causes produced it.
+**Classic or agent-specific.** Classic. ReservationManager owns room registration, booking creation/cancellation, conflict detection, pricing, availability queries, caching, notifications, and presentation formatting.
 
-**Where in the code.** File and, where there is one, method.
+**Where in the code.** src/reservationManager.ts:30, especially createBooking() at line 57. That method validates, detects conflicts, calculates prices, generates IDs, persists data, and sends notifications. formatReceipt(), formatDailySummary(), and dispatchNotification() demonstrate additional unrelated responsibilities.
 
-**The principle it violates.** Name the principle. "This is too big" is not a principle.
+**The principle it violates.** Single Responsibility Principle. The class has many independent reasons to change: booking policy, pricing rules, persistence, notification behavior, caching, and output formatting.
 
-**What it makes expensive.** A concrete future change, or something that already goes wrong
-today. What breaks first?
+**What it makes expensive.** Changing one concern requires modifying and retesting the central class. For example, changing the confirmation-message format risks also changing the public receipt because dispatchNotification() uses formatReceipt() as the email body. Adding another booking workflow would also require editing createBooking(), risking unrelated pricing, storage, and notification behavior.
 
 ### Smell 2
 
