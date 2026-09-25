@@ -64,11 +64,11 @@ there. "I ran out of time" is not a scope line.
 
 I changed only pricing-rule ownership. I kept the public ReservationManager.calculatePrice() API and did not address the God Class, cache, reporting semantics, or other smells to keep the refactor small and behavior-preserving.
 
-**How you know behavior is preserved.** Point at the suite, say what it actually covers, and
-say what it would not catch.
+**How you know behavior is preserved.** Point at the suite, say what it actually covers, and say what it would not catch.
 
 All 39 tests pass, and TypeScript type-checking passes. The suite covers standard, premium, long, and
 evening pricing, plus revenue reporting. It does not cover every combined pricing-rule interaction or every rounding edge case. No tests were edited.
+
 ---
 
 ## Milestone 3: Two proposals and one false positive
