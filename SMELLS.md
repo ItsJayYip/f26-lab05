@@ -53,14 +53,22 @@ One fix, behavior preserved, suite green, zero test edits.
 
 **Which smell you attacked.** And why that one.
 
+Smell 2; it was the easiest to understand and manage: the same pricing rules were duplicated in two places. 
+
 **What changed.** Files and methods you touched, and what the code does differently now.
+
+Added src/pricing.ts as the single pricing source. ReservationManager.calculatePrice() now delegates to it, and ReportGenerator.revenue() uses it instead of its private duplicated calculation. Observable behavior is unchanged.
 
 **What you deliberately did not touch.** Name the scope line you drew and why you drew it
 there. "I ran out of time" is not a scope line.
 
+I changed only pricing-rule ownership. I kept the public ReservationManager.calculatePrice() API and did not address the God Class, cache, reporting semantics, or other smells to keep the refactor small and behavior-preserving.
+
 **How you know behavior is preserved.** Point at the suite, say what it actually covers, and
 say what it would not catch.
 
+All 39 tests pass, and TypeScript type-checking passes. The suite covers standard, premium, long, and
+evening pricing, plus revenue reporting. It does not cover every combined pricing-rule interaction or every rounding edge case. No tests were edited.
 ---
 
 ## Milestone 3: Two proposals and one false positive
@@ -69,24 +77,38 @@ One proposal for each milestone 1 smell you did not fix.
 
 ### Proposal A (not coded)
 
-**The problem.** Name it.
+**The problem.** Name it. God Class
 
 **The decomposition.** What are the pieces, what does each own, and where do the rules live?
 
+ReservationManager owns booking workflows; RoomRegistry owns rooms; BookingFormatter owns receipts and summaries; notification delivery remains behind NotificationChannel. Each component contains only its own rules.
+
 **One cost.** Something this actually costs. "No real downside" is not a cost.
+
+Every new feature continues expanding ReservationManager, increasing regression risk and making isolated testing harder.
 
 ### Proposal B (not coded)
 
-**The problem.**
+**The problem.** Hidden Clock Dependency
 
 **The decomposition.**
 
+Introduce a Clock interface that owns the current-time operation. SystemClock supplies real time, tests can supply a fake clock, and QueryCache retains expiration rules.
+
 **One cost.**
+
+Expiration tests must manipulate global timers or wait for real time, making them harder to write and potentially nondeterministic.
 
 ### The thing that looks smelly but is fine
 
-**What it is.** File and method.
+**What it is.** File and method. 
+
+ReportGenerator.occupancy() in src/reportGenerator.ts:27.
 
 **Why it is fine.** Defend it with properties of the code, not with its line count.
 
+It reads Booking and Room fields because calculating occupancy is reporting behavior. It aggregates  public data without modifying bookings or enforcing booking rules.
+
 **What would flip your verdict.** Name the change that would turn this into a real problem.
+
+If occupancy() began changing bookings or duplicating domain policies such as pricing, cancellation, or conflict rules, that behavior would belong elsewhere and become Feature Envy.
